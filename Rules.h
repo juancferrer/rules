@@ -1,7 +1,7 @@
 #include<functional>
 #include<iostream>
 using namespace std;
-
+/* Rules interface */
 class IRule{
     public:
         virtual ~IRule(){};
@@ -11,6 +11,7 @@ class IRule{
         virtual operator bool() const{};
 };
 
+/* Concrete base class for all the rules */
 class Rule: public IRule{
     public:
         ~Rule(){};
@@ -18,8 +19,9 @@ class Rule: public IRule{
             this->valid = false;
             this->name = name;
         };
-        string getName(){return this->name;};
         void process(int value){};
+        // Shouldn't have to override anything below here
+        string getName(){return this->name;};
         bool isValid(){return this->valid;};
         operator bool() const{return this->valid;};
         friend ostream& operator<<(ostream &out, Rule &rule){
@@ -33,6 +35,11 @@ class Rule: public IRule{
         bool valid;
 };
 
+
+/* Applies a boolean operation to the 2 working values
+ * with an optional offset added to the incoming value
+ * before performing the boolean operation
+ */
 template<class T> 
 class BooleanRule : public Rule{
     public:
@@ -41,6 +48,7 @@ class BooleanRule : public Rule{
             this->op = op;
             this->offset = offset;
         };
+
         void process(int value){
             if(this->valid) return;
             if(!this->started){
@@ -53,7 +61,6 @@ class BooleanRule : public Rule{
             //Alwas the new value first (  NEW < OLD, NEW > OLD, etc..)
             if(this->op(this->val2+offset, this->val1)){
                 this->valid = true;
-                return;
             }
             swap(this->val1, this->val2);
         };
@@ -64,6 +71,11 @@ class BooleanRule : public Rule{
         bool started;
 };
 
+/* Applies an arithmetic operation to the 2 working values
+ * and checks for equality of the operation result with the target value.
+ * If the optional boolean operator is given, it will use that operator 
+ * instead of the equality operator
+ */
 template<class T1, class T2 > 
 class ArithmeticRule : public Rule{
     public:
@@ -73,6 +85,7 @@ class ArithmeticRule : public Rule{
             this->optional = optional;
             this->target = target;
         };
+
         void process(int value){
             if(this->valid) return;
             if(!this->started){
@@ -90,7 +103,6 @@ class ArithmeticRule : public Rule{
             }
             else if(this->result == this->target){
                 this->valid = true;
-                return;
             }
             swap(this->val1, this->val2);
         };
@@ -103,6 +115,10 @@ class ArithmeticRule : public Rule{
         bool started;
 };
 
+/* Computes the running average and compares for equality to the target value.
+ * If the optional boolean operator is given, it will use that operator
+ * instead of the equality operator
+ */
 template<class T> 
 class AvgRule : public Rule{
     public:
