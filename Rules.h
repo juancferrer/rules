@@ -18,9 +18,9 @@ class Rule: public IRule{
         Rule(const string &name):valid(valid), name(name){};
         void process(int value){};
         // Shouldn't have to override anything below here
-        string getName(){return this->name;};
-        bool isValid(){return this->valid;};
-        operator bool() const{return this->valid;};
+        string getName(){return name;};
+        bool isValid(){return valid;};
+        operator bool() const{return valid;};
         friend ostream& operator<<(ostream &out, Rule &rule){
             string result = rule.isValid() ? "passed":"failed";
             out << "Rule " << rule.getName() << ' ' << result;
@@ -45,19 +45,19 @@ class BooleanRule : public Rule{
              Rule(name), op(op), offset(offset){};
 
         void process(int value){
-            if(this->valid) return;
-            if(!this->started){
+            if(valid) return;
+            if(started){
                 // Setup the initial value
-                this->val1 = value;
-                this->started = true;
+                val1 = value;
+                started = true;
                 return;
             }
-            this->val2 = value;
+            val2 = value;
             //Alwas the new value first (  NEW < OLD, NEW > OLD, etc..)
-            if(this->op(this->val2+offset, this->val1)){
-                this->valid = true;
+            if(op(val2+offset, val1)){
+                valid = true;
             }
-            swap(this->val1, this->val2);
+            swap(val1, val2);
         };
 
     private:
@@ -79,24 +79,24 @@ class ArithmeticRule : public Rule{
             Rule(name), op(op), optional(optional), target(target){};
 
         void process(int value){
-            if(this->valid) return;
-            if(!this->started){
+            if(valid) return;
+            if(!started){
                 // Setup the initial value
-                this->val1 = value;
-                this->started = true;
+                val1 = value;
+                started = true;
                 return;
             }
-            this->val2 = value;
-            this->result = this->op(this->val2, this->val1);
+            val2 = value;
+            result = op(val2, val1);
             //If we have the optional bool operator use that against target
             //otherwise, just do an equality check
-            if(this->optional != NULL){
-                this->valid = this->optional(this->result, this->target);
+            if(optional != NULL){
+                valid = optional(result, target);
             }
-            else if(this->result == this->target){
-                this->valid = true;
+            else if(result == target){
+                valid = true;
             }
-            swap(this->val1, this->val2);
+            swap(val1, val2);
         };
 
     private:
@@ -121,19 +121,19 @@ class AvgRule : public Rule{
 
         void process(int value){
             count++;
-            this->total += value;
-            this->avg = this->total/count;
+            total += value;
+            avg = total/count;
             //If we have the optional bool operator use that against target
             //otherwise, just do an equality check
-            if(this->optional != NULL){
-                this->valid = this->optional(this->avg, this->target);
+            if(optional != NULL){
+                valid = optional(avg, target);
             }
             else{
-                this->valid = (this->avg == this->target);
+                valid = (avg == target);
             }
         };
-        bool isValid(){return this->valid;};
-        operator bool() const{return this->valid;};
+        bool isValid(){return valid;};
+        operator bool() const{return valid;};
 
     private:
         int target, avg, count, total;
