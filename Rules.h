@@ -15,10 +15,7 @@ class IRule{
 class Rule: public IRule{
     public:
         ~Rule(){};
-        Rule(const string &name){
-            this->valid = false;
-            this->name = name;
-        };
+        Rule(const string &name):valid(valid), name(name){};
         void process(int value){};
         // Shouldn't have to override anything below here
         string getName(){return this->name;};
@@ -44,10 +41,8 @@ template<class T>
 class BooleanRule : public Rule{
     public:
          ~BooleanRule(){};
-         BooleanRule(string name, T op, int offset=0):Rule(name){
-            this->op = op;
-            this->offset = offset;
-        };
+         BooleanRule(string name, T op, int offset=0):
+             Rule(name), op(op), offset(offset){};
 
         void process(int value){
             if(this->valid) return;
@@ -80,11 +75,8 @@ template<class T1, class T2 >
 class ArithmeticRule : public Rule{
     public:
         ~ArithmeticRule(){};
-        ArithmeticRule(string name, T1 op, int target, T2 optional=NULL):Rule(name){
-            this->op = op;
-            this->optional = optional;
-            this->target = target;
-        };
+        ArithmeticRule(string name, T1 op, int target, T2 optional=NULL):
+            Rule(name), op(op), optional(optional), target(target){};
 
         void process(int value){
             if(this->valid) return;
@@ -123,12 +115,10 @@ template<class T>
 class AvgRule : public Rule{
     public:
         ~AvgRule(){};
-        AvgRule(string name, int target, T optional=NULL):Rule(name){
-            this->optional = optional;
-            this->target = target;
-            this->count = 0;
-            this->total = 0;
-        };
+        AvgRule(string name, int target, T optional=NULL):
+            Rule(name), optional(optional), target(target), count(count),
+            total(total){};
+
         void process(int value){
             count++;
             this->total += value;
